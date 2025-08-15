@@ -5,7 +5,7 @@
 
 - 🌱 I’m currently learning **DevOps**
 
-- 👨‍💻 All of my projects are available at [https://nishant-portfolio-kappa.vercel.app/](https://nishant-portfolio-kappa.vercel.app/)
+- 👨‍💻 All of my projects are available at [[https://nishant-portfolio-kappa.vercel.app/](https://github.com/IamNishant51)]
 
 - 📫 How to reach me **nishantunawne0007@gmail.com**
 
