@@ -1,0 +1,28 @@
+name: Chat with DeepSeek
+on:
+  workflow_dispatch:
+    inputs:
+      colab_url:
+        description: ' https://unnigh-wilton-exceptionally.ngrok-free.dev'
+        required: true
+      user_prompt:
+        description: 'What do you want to ask the AI?'
+        required: true
+        default: 'Tell me a fun fact about coding.'
+
+jobs:
+  call-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Message to Colab
+        run: |
+          echo "Sending message to your AI..."
+          
+          # This sends your prompt to your Colab link
+          curl -X POST "${{ github.event.inputs.colab_url }}/api/generate" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "deepseek-r1:8b",
+            "prompt": "${{ github.event.inputs.user_prompt }}",
+            "stream": false
+          }'
