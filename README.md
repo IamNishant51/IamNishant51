@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Press+Start+2P&size=70&pause=1000&color=FFFFFF&center=true&vCenter=true&width=600&height=150&lines=NISHANT&displayMode=static" alt="Nishant" />
+  <img src="https://readme-typing-svg.demolab.com?font=Press+Start+2P&size=70&color=FFFFFF&center=true&vCenter=true&width=600&height=150&lines=NISHANT&repeat=false&runonce=true" alt="Nishant" />
 </p>
 
 <p align="center">
