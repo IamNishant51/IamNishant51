@@ -43,15 +43,6 @@ I bridge the gap between **Developer Experience (DX)** and **Full-Stack Architec
 
 ---
 
-### 📊 Engineering Metrics
-
-<p align="center">
-  <img width="48%" src="https://github-readme-stats.vercel.app/api?username=IamNishant51&show_icons=true&theme=tokyonight&hide_border=true&count_private=true" />
-  <img width="42%" src="https://github-readme-stats.vercel.app/api/top-langs/?username=IamNishant51&layout=compact&theme=tokyonight&hide_border=true" />
-</p>
-
----
-
 <p align="center">
   <a href="https://www.linkedin.com/in/nishant-unavane-008291275?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
   <a href="mailto:nishant.unavane@outlook.com"><img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" /></a>
