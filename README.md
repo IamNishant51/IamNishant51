@@ -1,9 +1,6 @@
 <!-- Animated Header -->
 <p align="center">
-  <img 
-    src="https://readme-typing-svg.demolab.com?font=Inter&weight=500&size=24&duration=3000&pause=800&color=0F172A&center=true&vCenter=true&width=600&lines=Nishant+Unavane;VS+Code+Extension+Developer;Full-Stack+Web+Developer" 
-    alt="Typing SVG" 
-  />
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=0F172A&height=120&section=header&text=NISHANT&fontSize=60&fontAlignY=50&fontColor=ffffff&font=Press%20Start%202P" />
 </p>
 
 <p align="center">
