@@ -15,8 +15,7 @@
 
 ---
 
-### Portfolio
-  **[Portfolio Website](https://nishantunavane.qzz.io/)**
+  🌐 **Portfolio:** [nishantunavane.qzz.io](https://nishantunavane.qzz.io)
   
 
 ---
