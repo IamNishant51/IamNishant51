@@ -31,6 +31,8 @@ TypeScript · Python · JavaScript · React / Next.js · Node.js · FastAPI · T
 
 - Website — [nishantunavane.qzz.io](https://nishantunavane.qzz.io)
 - GitHub — [@IamNishant51](https://github.com/IamNishant51)
+- LinkedIn — [Nishant Unavane](https://www.linkedin.com/in/nishant-unavane-008291275)
+- Email — [nishantunawne0007@gmail.com](mailto:nishantunawne0007@gmail.com)
 
 ---
 
