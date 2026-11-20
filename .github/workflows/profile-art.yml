@@ -1,0 +1,170 @@
+# Regenerates the animated profile art (snake, Pac-Man, honest stats) and
+# publishes it to the `output` branch. The profile README on `main` reads
+# everything from raw.githubusercontent.com/.../output/...
+#
+# Deliberately NOT included:
+# - 3D contribution calendar (its language pie counts public repos only)
+# - Minesweeper issue game (out of scope)
+# - Third-party stat cards (calendar-year / public-only numbers)
+#
+# All actions are SHA-pinned. SHAs resolved 2026-11-20 via
+# api.github.com /repos/{owner}/{repo}/commits/{ref}:
+# - actions/checkout v4   -> 11d5960a326750d5838078e36cf38b85af677262
+# - actions/setup-node v4 -> 49933ea5288caeca8642d1e84afbd3f7d6820020
+# - Platane/snk v3.5.0    -> d8f6715049803e982ee5ff501b6b9b7d5deeb09b
+# NOTE: actions/checkout v5 SHA could NOT be resolved — the unauthenticated
+# api.github.com rate limit (60/hr) was exhausted at resolve time. v4 is
+# used instead; re-resolve v5 before upgrading.
+#
+# Snk output filenames (chosen here via the `outputs:` list, not snk's bare
+# default `github-contribution-grid-snake.svg`):
+# - dist/github-contribution-grid-snake-dark.svg  (palette=github-dark)
+# - dist/github-contribution-grid-snake-light.svg (palette=github-light)
+# These are the exact filenames the README references on `output`.
+#
+# Pac-Man contract (scripts/ provided by Worker A, assumed on `main`):
+# - scripts/generate-pacman.mjs reads scripts/contrib-grid.json
+#   ([{date, level, count}], level 0-4) and writes dist/pacman.svg.
+#   The workflow fails loudly if dist/pacman.svg is missing afterwards.
+# - scripts/package.json + package-lock.json installed with `npm ci`.
+# The grid is refreshed in this workflow from the same GraphQL call that
+# feeds the stats, so Pac-Man stays daily-fresh (level NONE..FOURTH_QUARTILE
+# maps to 0..4, count = contributionCount).
+
+name: Profile Art
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+# Least privilege: the whole job only needs to push generated files.
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-art
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: Generate snake (light + dark)
+        uses: Platane/snk@d8f6715049803e982ee5ff501b6b9b7d5deeb09b # v3.5.0
+        with:
+          github_user_name: IamNishant51
+          outputs: |
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+            dist/github-contribution-grid-snake-light.svg?palette=github-light
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ONE GraphQL call: honest stats + fresh contribution grid.
+      # No user input is interpolated into the shell; the login is hardcoded.
+      - name: Fetch honest stats + refresh contribution grid
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh api graphql -f query='
+            query {
+              user(login: "IamNishant51") {
+                followers { totalCount }
+                repositories(privacy: PUBLIC) { totalCount }
+                contributionsCollection {
+                  totalContributions
+                  totalPullRequestContributions
+                  contributionCalendar {
+                    weeks {
+                      contributionDays { date contributionCount contributionLevel }
+                    }
+                  }
+                }
+              }
+            }' > /tmp/profile.json
+
+          jq -r '.data.user.contributionsCollection.totalContributions' /tmp/profile.json | grep -Eq '^[0-9]+$'
+          jq -r '.data.user.followers.totalCount' /tmp/profile.json | grep -Eq '^[0-9]+$'
+
+          endpoint() {
+            # $1 = file, $2 = label, $3 = message
+            jq -n \
+              --arg label "$2" \
+              --arg message "$3" \
+              '{schemaVersion: 1, label: $label, message: $message, color: "2ea043"}' \
+              > "dist/$1"
+          }
+          endpoint stats-contributions.json "contributions · last year" "$(jq -r '.data.user.contributionsCollection.totalContributions' /tmp/profile.json)"
+          endpoint stats-followers.json "followers" "$(jq -r '.data.user.followers.totalCount' /tmp/profile.json)"
+          endpoint stats-repos.json "public repos" "$(jq -r '.data.user.repositories.totalCount' /tmp/profile.json)"
+          endpoint stats-prs.json "pull requests · last year" "$(jq -r '.data.user.contributionsCollection.totalPullRequestContributions' /tmp/profile.json)"
+
+          # Fresh grid for Pac-Man, same shape Worker A defined:
+          # [{date, level (0-4), count}], chronological.
+          jq '[.data.user.contributionsCollection.contributionCalendar.weeks[].contributionDays[]
+            | {date, level: ({"NONE": 0, "FIRST_QUARTILE": 1, "SECOND_QUARTILE": 2, "THIRD_QUARTILE": 3, "FOURTH_QUARTILE": 4}[.contributionLevel]), count: .contributionCount}]
+            | sort_by(.date)' /tmp/profile.json > scripts/contrib-grid.json
+          test "$(jq 'length' scripts/contrib-grid.json)" -ge 300
+          test "$(jq '[.[].count] | add' scripts/contrib-grid.json)" -gt 0
+
+      - name: Generate Pac-Man graph
+        env:
+          PACMAN_OUT: dist/pacman.svg
+        run: |
+          set -euo pipefail
+          npm ci --prefix scripts
+          node scripts/generate-pacman.mjs
+        # Run from the repo root, so a relative output of dist/pacman.svg
+        # lands in dist/ at the root. If Worker A's script writes
+        # elsewhere, the guard below fails loudly instead of publishing
+        # a stale/missing graph.
+
+      - name: Verify generated files exist
+        run: |
+          set -euo pipefail
+          ls -l dist/
+          test -s dist/pacman.svg
+          test -s dist/github-contribution-grid-snake-dark.svg
+          test -s dist/github-contribution-grid-snake-light.svg
+          test -s dist/stats-contributions.json
+          test -s dist/stats-followers.json
+          test -s dist/stats-repos.json
+          test -s dist/stats-prs.json
+
+      - name: Publish to output branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin output || true
+          if git show-ref --verify --quiet refs/remotes/origin/output; then
+            git checkout output
+          else
+            git checkout --orphan output
+            git rm -rf . || true
+          fi
+          # dist/ is untracked, so it survives the branch switch above.
+          cp dist/pacman.svg dist/github-contribution-grid-snake-dark.svg dist/github-contribution-grid-snake-light.svg dist/stats-contributions.json dist/stats-followers.json dist/stats-repos.json dist/stats-prs.json ./
+          git add pacman.svg github-contribution-grid-snake-dark.svg github-contribution-grid-snake-light.svg stats-contributions.json stats-followers.json stats-repos.json stats-prs.json
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+          else
+            git commit -m "chore: regenerate profile art [skip ci]"
+            git push origin output
+          fi
