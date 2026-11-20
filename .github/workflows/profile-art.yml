@@ -82,6 +82,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
+          # Platane/snk runs in Docker as root, so dist/ is root-owned after
+          # the snake step; take it back so this step (and the Pac-Man step)
+          # can write into it. Without this, the first stats write fails
+          # with "Permission denied".
+          sudo chown -R "$USER" dist
           gh api graphql -f query='
             query {
               user(login: "IamNishant51") {
