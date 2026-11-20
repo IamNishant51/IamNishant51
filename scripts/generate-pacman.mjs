@@ -2,9 +2,12 @@
 /**
  * generate-pacman.mjs — Pac-Man contribution-graph SVG for IamNishant51.
  *
- * Uses the real `pacman-contribution-graph` package (5.5.2, pinned) with the
- * jsdom shim from the dev.to article (JSDOM + pretendToBeVisual, globals set,
- * ArcadeRenderer + svgCallback / gameOverCallback).
+ * Uses the real `pacman-contribution-graph` package (5.5.2, pinned) with
+ * ArcadeRenderer + svgCallback / gameOverCallback. No DOM shim is needed:
+ * the package builds its SVG from strings and only uses fetch (intercepted
+ * below), so it runs in plain Node. jsdom was dropped 2026-11-20: the
+ * workflow could not install its data-urls dependency (corrupt tarball
+ * from the registry edge on GitHub runners, same bad hash 3 runs in a row).
  *
  * DATA: the package has no custom-data input — platform 'github' fetches live
  * from GitHub. Without a token it falls back to the Search Commits API, which
@@ -29,7 +32,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { JSDOM } from 'jsdom';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GRID_PATH = path.join(__dirname, 'contrib-grid.json');
@@ -39,23 +41,6 @@ const GRID_PATH = path.join(__dirname, 'contrib-grid.json');
 const OUT_PATH = process.env.PACMAN_OUT
   ? path.resolve(process.env.PACMAN_OUT)
   : path.join(__dirname, '..', 'preview', 'pacman.svg');
-
-// ---- jsdom shim (per the dev.to article) ----
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
-  pretendToBeVisual: true,
-});
-globalThis.window = dom.window;
-globalThis.document = dom.window.document;
-// Node 24 exposes navigator as a getter-only global — define it instead.
-Object.defineProperty(globalThis, 'navigator', {
-  value: dom.window.navigator,
-  configurable: true,
-  writable: true,
-});
-globalThis.requestAnimationFrame =
-  dom.window.requestAnimationFrame.bind(dom.window);
-globalThis.cancelAnimationFrame =
-  dom.window.cancelAnimationFrame.bind(dom.window);
 
 // ---- load the parsed contribution grid ----
 const grid = JSON.parse(fs.readFileSync(GRID_PATH, 'utf-8'));
