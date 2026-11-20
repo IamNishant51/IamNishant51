@@ -1,14 +1,1 @@
-{
-  "name": "github-profile-scripts",
-  "version": "1.0.0",
-  "description": "Generators for Nishant Unavane's animated GitHub profile README (Pac-Man + snake)",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "pacman": "node generate-pacman.mjs"
-  },
-  "dependencies": {
-    "jsdom": "31.0.1",
-    "pacman-contribution-graph": "5.5.2"
-  }
-}
+{"dependencies":{"pacman-contribution-graph":"5.5.2"},"description":"Generators for Nishant Unavane's animated GitHub profile README (Pac-Man + snake)","name":"github-profile-scripts","private":true,"scripts":{"pacman":"node generate-pacman.mjs"},"type":"module","version":"1.0.0"}
