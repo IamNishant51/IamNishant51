@@ -88,9 +88,9 @@ jobs:
                 followers { totalCount }
                 repositories(privacy: PUBLIC) { totalCount }
                 contributionsCollection {
-                  totalContributions
                   totalPullRequestContributions
                   contributionCalendar {
+                    totalContributions
                     weeks {
                       contributionDays { date contributionCount contributionLevel }
                     }
@@ -99,7 +99,7 @@ jobs:
               }
             }' > /tmp/profile.json
 
-          jq -r '.data.user.contributionsCollection.totalContributions' /tmp/profile.json | grep -Eq '^[0-9]+$'
+          jq -r '.data.user.contributionsCollection.contributionCalendar.totalContributions' /tmp/profile.json | grep -Eq '^[0-9]+$'
           jq -r '.data.user.followers.totalCount' /tmp/profile.json | grep -Eq '^[0-9]+$'
 
           endpoint() {
@@ -110,7 +110,7 @@ jobs:
               '{schemaVersion: 1, label: $label, message: $message, color: "2ea043"}' \
               > "dist/$1"
           }
-          endpoint stats-contributions.json "contributions · last year" "$(jq -r '.data.user.contributionsCollection.totalContributions' /tmp/profile.json)"
+          endpoint stats-contributions.json "contributions · last year" "$(jq -r '.data.user.contributionsCollection.contributionCalendar.totalContributions' /tmp/profile.json)"
           endpoint stats-followers.json "followers" "$(jq -r '.data.user.followers.totalCount' /tmp/profile.json)"
           endpoint stats-repos.json "public repos" "$(jq -r '.data.user.repositories.totalCount' /tmp/profile.json)"
           endpoint stats-prs.json "pull requests · last year" "$(jq -r '.data.user.contributionsCollection.totalPullRequestContributions' /tmp/profile.json)"
