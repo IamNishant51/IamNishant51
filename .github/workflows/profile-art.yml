@@ -133,13 +133,6 @@ jobs:
           PACMAN_OUT: dist/pacman.svg
         run: |
           set -euo pipefail
-          # WORKAROUND (2026-11-20): the npm registry edge serving GitHub
-          # runners returns a corrupted data-urls@8.0.0 tarball (integrity
-          # mismatch, same wrong hash on two fresh runners), while the
-          # registry copy itself is fine. Fetch that one package from the
-          # yarnpkg mirror instead; npm ci still verifies it against the
-          # lockfile integrity hash, so a bad mirror copy fails loudly.
-          sed -i 's|https://registry.npmjs.org/data-urls/|https://registry.yarnpkg.com/data-urls/|' scripts/package-lock.json
           npm ci --prefix scripts
           node scripts/generate-pacman.mjs
         # Run from the repo root, so a relative output of dist/pacman.svg
