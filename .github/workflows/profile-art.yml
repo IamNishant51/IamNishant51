@@ -159,6 +159,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin output || true
           if git show-ref --verify --quiet refs/remotes/origin/output; then
+            # The stats step rewrites scripts/contrib-grid.json (tracked on
+            # main, absent on output); restore it or the switch below aborts
+            # on local changes — this is what broke the 21 Nov daily run.
+            git restore scripts/contrib-grid.json
             git checkout output
           else
             git checkout --orphan output
